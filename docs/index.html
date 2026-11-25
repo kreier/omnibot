@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Omnibot — T-Display Web Flasher &amp; DualShock 3 Tools</title>
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("omnibot-theme");
+        const theme =
+          saved === "light" || saved === "dark"
+            ? saved
+            : window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="style.css" />
   <script
     type="module"
@@ -13,10 +27,15 @@
 <body>
   <div class="container">
     <header>
-      <div class="badge-row">
-        <span class="badge green">Firmware v0.1.0</span>
-        <span class="badge">LilyGO T-Display (ESP32)</span>
-        <span class="badge">DualShock 3 (Original &amp; Clone)</span>
+      <div class="header-top">
+        <div class="badge-row">
+          <span class="badge green">Firmware v0.1.0</span>
+          <span class="badge">LilyGO T-Display (ESP32)</span>
+          <span class="badge">DualShock 3 (Original &amp; Clone)</span>
+        </div>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light or dark theme">
+          Light mode
+        </button>
       </div>
       <h1>Omnibot Control &amp; Web Flasher</h1>
       <p class="subtitle">

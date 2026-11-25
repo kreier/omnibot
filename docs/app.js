@@ -1,4 +1,5 @@
 (() => {
+  const themeToggleBtn = document.getElementById("themeToggle");
   const macInput = document.getElementById("macInput");
   const cliCmdEl = document.getElementById("cliCommand");
   const logEl = document.getElementById("ds3Log");
@@ -9,6 +10,30 @@
   const btnWebUsbWrite = document.getElementById("btnWebUsbWrite");
   const btnWebHidRead = document.getElementById("btnWebHidRead");
   const btnWebHidWrite = document.getElementById("btnWebHidWrite");
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    if (themeToggleBtn) {
+      const isLight = theme === "light";
+      themeToggleBtn.textContent = isLight ? "Dark mode" : "Light mode";
+      themeToggleBtn.setAttribute("aria-pressed", String(isLight));
+    }
+    try {
+      localStorage.setItem("omnibot-theme", theme);
+    } catch (_) {}
+  }
+
+  const initialTheme =
+    document.documentElement.getAttribute("data-theme") ||
+    (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  applyTheme(initialTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+      applyTheme(current === "light" ? "dark" : "light");
+    });
+  }
 
   function log(msg) {
     const ts = new Date().toLocaleTimeString();

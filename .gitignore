@@ -58,3 +58,4 @@ dkms.conf
 .pio/
 firmware/*/build/
 _site/
+_release/
