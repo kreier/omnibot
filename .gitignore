@@ -53,3 +53,8 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# PlatformIO build artifacts & downloaded libraries
+.pio/
+firmware/*/build/
+_site/

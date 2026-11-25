@@ -1,0 +1,74 @@
+name: Build Firmware & Deploy GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            firmware/omnibot_tdisplay/.pio
+          key: ${{ runner.os }}-pio-${{ hashFiles('firmware/omnibot_tdisplay/platformio.ini', 'firmware/omnibot_tdisplay/scripts/patch_ps3_ssp.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pio-
+
+      - name: Install PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Build T-Display firmware
+        working-directory: firmware/omnibot_tdisplay
+        run: pio run
+
+      - name: Stage GitHub Pages site with compiled firmware
+        run: |
+          rm -rf _site
+          mkdir -p _site/firmware
+          cp -r docs/. _site/
+          cp firmware/omnibot_tdisplay/.pio/build/lilygo-t-display/bootloader.bin _site/firmware/
+          cp firmware/omnibot_tdisplay/.pio/build/lilygo-t-display/partitions.bin _site/firmware/
+          cp firmware/omnibot_tdisplay/.pio/build/lilygo-t-display/firmware.bin _site/firmware/
+          cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin _site/firmware/
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
